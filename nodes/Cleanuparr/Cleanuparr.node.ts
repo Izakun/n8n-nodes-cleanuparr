@@ -33,10 +33,14 @@ export class Cleanuparr implements INodeType {
 				type: 'options',
 				noDataExpression: true,
 				options: [
-					{ name: 'Get Configuration', value: 'getConfiguration', action: 'Get the configuration' },
+					{ name: 'Get Events', value: 'getEvents', action: 'Get the event log' },
+					{ name: 'Get General Config', value: 'getGeneralConfig', action: 'Get the general config' },
 					{ name: 'Get Health', value: 'getHealth', action: 'Get the health status' },
+					{ name: 'Get Jobs', value: 'getJobs', action: 'Get scheduled jobs' },
+					{ name: 'Get Stats', value: 'getStats', action: 'Get cleanup statistics' },
+					{ name: 'Get Status', value: 'getStatus', action: 'Get the system status' },
 				],
-				default: 'getConfiguration',
+				default: 'getStatus',
 			},
 		],
 	};
@@ -45,9 +49,13 @@ export class Cleanuparr implements INodeType {
 		const items = this.getInputData();
 		const returnData: INodeExecutionData[] = [];
 
-		const URL_BY_OP: Record<string, string> = {
-			getConfiguration: '/api/configuration',
-			getHealth: '/health',
+		const ENDPOINT_BY_OP: Record<string, { url: string; qs?: IDataObject }> = {
+			getEvents: { url: '/api/events' },
+			getGeneralConfig: { url: '/api/configuration/general' },
+			getHealth: { url: '/health' },
+			getJobs: { url: '/api/jobs' },
+			getStats: { url: '/api/v2/stats', qs: { hours: 168 } },
+			getStatus: { url: '/api/status' },
 		};
 
 		for (let i = 0; i < items.length; i++) {
@@ -56,26 +64,37 @@ export class Cleanuparr implements INodeType {
 				const baseURL = (credentials.baseUrl as string).replace(/\/+$/, '');
 				const operation = this.getNodeParameter('operation', i) as string;
 
-				const url = URL_BY_OP[operation];
-				if (!url) {
+				const endpoint = ENDPOINT_BY_OP[operation];
+				if (!endpoint) {
 					throw new NodeOperationError(this.getNode(), `Unsupported operation: ${operation}`, {
 						itemIndex: i,
 					});
 				}
 
-				const response = await this.helpers.httpRequest({
-					method: 'GET' as IHttpRequestMethods,
-					baseURL,
-					url,
-					json: true,
-				} as IHttpRequestOptions);
+				const response = await this.helpers.httpRequestWithAuthentication.call(
+					this,
+					'cleanuparrApi',
+					{
+						method: 'GET' as IHttpRequestMethods,
+						baseURL,
+						url: endpoint.url,
+						qs: endpoint.qs,
+						json: true,
+					} as IHttpRequestOptions,
+				);
 
-				returnData.push({
-					json: (typeof response === 'object' && response !== null
-						? response
-						: { result: response }) as IDataObject,
-					pairedItem: { item: i },
-				});
+				if (Array.isArray(response)) {
+					for (const element of response) {
+						returnData.push({ json: element as IDataObject, pairedItem: { item: i } });
+					}
+				} else {
+					returnData.push({
+						json: (typeof response === 'object' && response !== null
+							? response
+							: { result: response }) as IDataObject,
+						pairedItem: { item: i },
+					});
+				}
 			} catch (error) {
 				if (this.continueOnFail()) {
 					returnData.push({ json: { error: (error as Error).message }, pairedItem: { item: i } });

@@ -1,4 +1,9 @@
-import { ICredentialType, INodeProperties } from 'n8n-workflow';
+import {
+	IAuthenticateGeneric,
+	ICredentialTestRequest,
+	ICredentialType,
+	INodeProperties,
+} from 'n8n-workflow';
 
 export class CleanuparrApi implements ICredentialType {
 	name = 'cleanuparrApi';
@@ -7,9 +12,8 @@ export class CleanuparrApi implements ICredentialType {
 
 	icon = 'file:cleanuparrApi.svg' as const;
 
-	documentationUrl = 'https://github.com/Cleanuparr/Cleanuparr';
+	documentationUrl = 'https://cleanuparr.github.io/Cleanuparr/';
 
-	// Cleanuparr's API is unauthenticated by default; only the base URL is needed.
 	properties: INodeProperties[] = [
 		{
 			displayName: 'Base URL',
@@ -19,5 +23,30 @@ export class CleanuparrApi implements ICredentialType {
 			required: true,
 			description: 'Base URL of the Cleanuparr instance (e.g. http://cleanuparr:11011). No trailing slash.',
 		},
+		{
+			displayName: 'API Key',
+			name: 'apiKey',
+			type: 'string',
+			typeOptions: { password: true },
+			default: '',
+			required: true,
+			description: 'Cleanuparr per-user API key (available once account setup is completed)',
+		},
 	];
+
+	authenticate: IAuthenticateGeneric = {
+		type: 'generic',
+		properties: {
+			headers: {
+				'X-Api-Key': '={{$credentials.apiKey}}',
+			},
+		},
+	};
+
+	test: ICredentialTestRequest = {
+		request: {
+			baseURL: '={{$credentials.baseUrl}}',
+			url: '/api/status',
+		},
+	};
 }
