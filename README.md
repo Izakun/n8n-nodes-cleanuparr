@@ -12,5 +12,18 @@ Install via **Settings -> Community Nodes -> Install** -> `n8n-nodes-cleanuparr`
 ## Credentials
 Configure the base URL and authentication in the **Cleanuparr API** credential.
 
+## Usage example
+
+Read the system status:
+
+1. Add the node after a trigger (e.g. *When clicking 'Test workflow'*).
+2. Select your credential.
+3. **Get Status**.
+4. Execute the node — example output:
+
+```json
+{ "application": { "version": "2.1.0", "upTime": "3.10:22:00" } }
+```
+
 ## Disclaimer
 Not affiliated with or endorsed by the respective project.
