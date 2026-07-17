@@ -16,7 +16,7 @@ export class Cleanuparr implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Cleanuparr',
 		name: 'cleanuparr',
-		icon: { light: 'file:cleanuparr.svg', dark: 'file:cleanuparr.svg' },
+		icon: { light: 'file:cleanuparr.svg', dark: 'file:cleanuparr.dark.svg' },
 		group: ['transform'],
 		version: 1,
 		subtitle: '={{$parameter["operation"]}}',
