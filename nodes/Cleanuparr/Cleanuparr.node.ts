@@ -71,6 +71,16 @@ export class Cleanuparr implements INodeType {
 					});
 				}
 
+				// Cleanuparr uses JWT auth: log in, then send the access token as a bearer.
+				const login = (await this.helpers.httpRequestWithAuthentication.call(this, 'cleanuparrApi', {
+					method: 'POST',
+					baseURL,
+					url: '/api/auth/login',
+					body: { username: credentials.username, password: credentials.password },
+					json: true,
+				} as IHttpRequestOptions)) as IDataObject;
+				const token = (login.accessToken ?? login.token) as string;
+
 				const response = await this.helpers.httpRequestWithAuthentication.call(
 					this,
 					'cleanuparrApi',
@@ -79,6 +89,7 @@ export class Cleanuparr implements INodeType {
 						baseURL,
 						url: endpoint.url,
 						qs: endpoint.qs,
+						headers: { Authorization: `Bearer ${token}` },
 						json: true,
 					} as IHttpRequestOptions,
 				);

@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-cleanuparr",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "n8n community node for Cleanuparr (clean arr download queues) via its API",
   "keywords": [
     "n8n-community-node-package",
