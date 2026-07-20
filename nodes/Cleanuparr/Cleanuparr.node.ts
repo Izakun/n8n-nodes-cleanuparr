@@ -79,7 +79,8 @@ export class Cleanuparr implements INodeType {
 					body: { username: credentials.username, password: credentials.password },
 					json: true,
 				} as IHttpRequestOptions)) as IDataObject;
-				const token = (login.accessToken ?? login.token) as string;
+				const tokens = (login.tokens ?? login) as IDataObject;
+				const token = (tokens.accessToken ?? login.accessToken ?? login.token) as string;
 
 				const response = await this.helpers.httpRequestWithAuthentication.call(
 					this,
